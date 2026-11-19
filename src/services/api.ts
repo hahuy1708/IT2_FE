@@ -1,9 +1,21 @@
 import axios from 'axios';
-import { Student, Regulation, DocStep, DocDetail, EvaluationResult, ChatResponse, AcademicEvent } from '../types';
+import {
+  Student,
+  Regulation,
+  RegulationContent,
+  SearchResponse,
+  DocDetail,
+  ProcedureCriteria,
+  EvaluationResult,
+  ChatResponse,
+  AcademicEvent,
+} from '../types';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,9 +40,39 @@ export const regulationApi = {
     const res = await api.get(`/regulations/${id}`);
     return res.data;
   },
+  getByNumber: async (documentNumber: string): Promise<Regulation> => {
+    const res = await api.get('/regulations/by-number', {
+      params: { documentNumber },
+    });
+    return res.data;
+  },
+  getContent: async (id: number): Promise<RegulationContent> => {
+    const res = await api.get(`/regulations/${id}/content`);
+    return res.data;
+  },
+  getPdfUrl: (id: number): string => `${API_BASE_URL}/regulations/${id}/pdf`,
+};
+
+export const searchApi = {
+  search: async (
+    params: { q?: string; category?: string; tags?: string[]; limit?: number },
+    signal?: AbortSignal,
+  ): Promise<SearchResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params.q) queryParams.set('q', params.q);
+    if (params.category) queryParams.set('category', params.category);
+    if (params.limit) queryParams.set('limit', String(params.limit));
+    params.tags?.forEach((t) => queryParams.append('tag', t));
+    const res = await api.get(`/search?${queryParams.toString()}`, { signal });
+    return res.data;
+  },
 };
 
 export const docApi = {
+  list: async (): Promise<DocDetail[]> => {
+    const res = await api.get('/docs');
+    return res.data;
+  },
   getById: async (id: number): Promise<DocDetail> => {
     const res = await api.get(`/docs/${id}`);
     return res.data;
@@ -38,6 +80,12 @@ export const docApi = {
 };
 
 export const procedureApi = {
+  getCriteria: async (procedureName = 'Học bổng Khuyến khích Học tập'): Promise<ProcedureCriteria[]> => {
+    const res = await api.get('/procedures/criteria', {
+      params: { procedureName },
+    });
+    return res.data;
+  },
   evaluate: async (studentCode: string): Promise<EvaluationResult> => {
     const res = await api.get(`/procedures/evaluate/${studentCode}`);
     return res.data;

@@ -13,15 +13,41 @@ export interface Student {
 
 export interface Regulation {
   id: number;
+  documentId?: string;
   documentNumber: string;
   title: string;
   category: 'HOC_BONG' | 'HOC_VU' | 'THU_TUC_MOT_CUA';
+  field?: string;
+  status?: string;
   tags?: string[];
   issuer: string;
-  issuedDate: string;
+  issuedDate?: string;
+  effectiveDate?: string;
   pdfUrl?: string;
   summary?: string;
   contentHtml?: string;
+  semanticScore?: number | null;
+  matchedClause?: string | null;
+  matchedExcerpt?: string | null;
+}
+
+export interface SearchResponse {
+  query: string;
+  category: string;
+  tags: string[];
+  total: number;
+  semanticUsed: boolean;
+  guardrailBlocked: boolean;
+  guardrailMessage?: string | null;
+  items: Regulation[];
+}
+
+export interface RegulationContent {
+  id: number;
+  documentNumber: string;
+  title: string;
+  contentHtml?: string | null;
+  markdown?: string | null;
 }
 
 export interface DocStep {
